@@ -75,6 +75,6 @@ echo "===============summary==============="
 for log in `ls ${BENCHMARK_LOG_DIR}`
 do
     latency=`cat ${BENCHMARK_LOG_DIR}/${log} | grep "Latency" | awk -F ':' '{print $2}' | awk -F ' ' '{print $1}'`
-    model=`echo ${log}` | awk -F '.' '{print $1}'
+    model=`echo ${log} | awk -F '.' '{print $1}'`
     echo $model $latency
 done
