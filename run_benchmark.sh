@@ -1,5 +1,5 @@
 MODEL_DIR=$1
-IF_CONVERT=ture
+IF_CONVERT=true
 ONNX_DIR="./tmp/onnx_models/"
 VINO_DIR="./tmp/openvino_models/"
 CONVERT_LOG_DIR="./tmp/convert_logs/"
