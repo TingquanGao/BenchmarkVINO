@@ -1,14 +1,20 @@
 # BenchmarkVINO
 
-## Install requirements
+## 1. Install requirements
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Run benchmark
+## 2. Run benchmark
 
-The directory `${inference_model_dir}` should contain the Paddle Inference model files that classified by name:
+The command to run benchmark:
+
+```bash
+bash run_benchmark.sh ${inference_dir}
+```
+
+About the above command, the The directory `${inference_model_dir}` should contain the Paddle Inference model files:
 
 ```
 inference_std
@@ -31,7 +37,7 @@ inference_std
     └── inference.pdmodel
 ```
 
-And the `model_list.txt` should describe the model to be tested:
+And the `model_list.txt` should describe the models to be tested:
 
 ```
 PPLCNet_x0_25
@@ -40,8 +46,3 @@ PPLCNet_x0_5
 PPLCNet_x0_75
 ```
 
-The command to run benchmark:
-
-```bash
-bash run_benchmark.sh ${inference_dir}
-```
