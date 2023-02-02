@@ -1,4 +1,6 @@
 MODEL_DIR=$1
+#VERSION=2021
+VERSION=2022
 IF_CONVERT=true
 ONNX_DIR="./tmp/onnx_models/"
 VINO_DIR="./tmp/openvino_models/"
@@ -11,11 +13,7 @@ MODEL_LIST=`cat "${MODEL_DIR}/model_list.txt"`
 NITER=1000
 NWARMUP=100
 BATCHSIZE_LIST="1"
-NTHERADS_LIST="1"
-niter=1000
-nwarmup=100
-batchsize_list="1"
-nthreads_list="1"
+NTHERADS_LIST="10"
 
 
 function status_check(){
@@ -64,7 +62,11 @@ do
                 continue
             fi
             sleep 1s
-            cmd="benchmark_app -m ${model_path} -d CPU -niter ${NITER} -b ${batchsize} -nthreads ${nthreads} -api sync > ${BENCHMARK_LOG_DIR}/${model}_bs_${batchsize}_ntherads_${nthreads}.log 2>&1"
+            if [ "${VERSION}" == "2021" ]; then
+                cmd="benchmark_app -m ${model_path} -d CPU -niter ${NITER} -b ${batchsize} -nthreads ${nthreads} -api sync > ${BENCHMARK_LOG_DIR}/${model}_bs_${batchsize}_ntherads_${nthreads}.log 2>&1"
+            else
+                cmd="benchmark_app -m ${model_path} -d CPU -niter ${NITER} -b ${batchsize} -nthreads ${nthreads} -api sync -hint none > ${BENCHMARK_LOG_DIR}/${model}_bs_${batchsize}_ntherads_${nthreads}.log 2>&1"
+            fi
             eval $cmd
             status_check $? "${cmd}" "${status_log}"
         done
@@ -74,7 +76,11 @@ done
 echo "===============summary==============="
 for log in `ls ${BENCHMARK_LOG_DIR}`
 do
-    latency=`cat ${BENCHMARK_LOG_DIR}/${log} | grep "Latency" | awk -F ':' '{print $2}' | awk -F ' ' '{print $1}'`
+    if [ "${VERSION}" == "2021" ]; then
+        latency=`cat ${BENCHMARK_LOG_DIR}/${log} | grep "Latency" | awk -F ':' '{print $2}' | awk -F ' ' '{print $1}'`
+    else
+        latency=`cat ${BENCHMARK_LOG_DIR}/${log} | grep "Average" | awk -F ':' '{print $2}' | awk -F ' ' '{print $1}'`
+    fi
     model=`echo ${log} | awk -F '.log' '{print $1}'`
     echo $model $latency
 done
