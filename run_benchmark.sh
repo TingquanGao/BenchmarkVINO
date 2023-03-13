@@ -1,12 +1,16 @@
 MODEL_DIR=$1
 #VERSION=2021
 VERSION=2022
+#VERSION=2023
 IF_CONVERT=true
+#IF_CONVERT=false
 ONNX_DIR="./tmp/onnx_models/"
 VINO_DIR="./tmp/openvino_models/"
 CONVERT_LOG_DIR="./tmp/convert_logs/"
 BENCHMARK_LOG_DIR="./tmp/benchmark_logs/"
-input_shape=[1,3,224,224]
+#input_shape=[1,3,224,224]
+input_shape=[1,3,48,320]
+#input_shape=[1,3,640,640]
 MODEL_LIST=`cat "${MODEL_DIR}/model_list.txt"`
 
 # openvino benchmark
@@ -49,6 +53,8 @@ fi
 
 echo "===============benchmark==============="
 mkdir -p ${BENCHMARK_LOG_DIR}
+mkdir -p benchmark_profiling
+
 for nthreads in ${NTHERADS_LIST}
 do
     for batchsize in ${BATCHSIZE_LIST}
@@ -64,11 +70,13 @@ do
             sleep 1s
             if [ "${VERSION}" == "2021" ]; then
                 cmd="benchmark_app -m ${model_path} -d CPU -niter ${NITER} -b ${batchsize} -nthreads ${nthreads} -api sync > ${BENCHMARK_LOG_DIR}/${model}_bs_${batchsize}_ntherads_${nthreads}.log 2>&1"
-            else
-                cmd="benchmark_app -m ${model_path} -d CPU -niter ${NITER} -b ${batchsize} -nthreads ${nthreads} -api sync -hint none > ${BENCHMARK_LOG_DIR}/${model}_bs_${batchsize}_ntherads_${nthreads}.log 2>&1"
-            fi
+      else
+                cmd="benchmark_app --report_type detailed_counters -m ${model_path} -d CPU -niter ${NITER} -b ${batchsize} -nthreads ${nthreads} -api sync -hint none > ${BENCHMARK_LOG_DIR}/${model}_bs_${batchsize}_ntherads_${nthreads}.log 2>&1"
+                #cmd="benchmark_app -m ${model_path} -d CPU -niter ${NITER} -b ${batchsize} -nthreads ${nthreads} -api sync -hint none > ${BENCHMARK_LOG_DIR}/${model}_bs_${batchsize}_ntherads_${nthreads}.log 2>&1"
+      fi
             eval $cmd
             status_check $? "${cmd}" "${status_log}"
+            mv ./benchmark_detailed_counters_report.csv ./benchmark_profiling/${model}.csv
         done
     done
 done
